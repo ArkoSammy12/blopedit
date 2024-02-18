@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "blopedit",
+	"version": "${version}",
+	"name": "Blopedit",
+	"description": "A Minecraft Fabric client-side mod to quickly and easily edit the block.properties file from shaders. ",
+	"authors": [
+		"ArkoSammy12"
+	],
+	"contact": {
+		"homepage": "https://github.com/ArkoSammy12",
+		"sources": "https://github.com/ArkoSammy12/blopedit"
+	},
+	"license": "MIT",
+	"icon": "assets/blopedit/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+			"xd.arkosammy.blopedit.BlopeditClient"
+		]
+	},
+	"mixins": [
+		"blopedit.client.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.7",
+		"minecraft": ">=1.20.4",
+		"java": ">=17",
+		"fabric-api": "*"
+	}
+}
