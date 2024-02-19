@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
+// TODO: Remember to get rid of log lines
 public class Blopedit implements ClientModInitializer {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger("blopedit");
