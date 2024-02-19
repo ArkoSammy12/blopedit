@@ -16,7 +16,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"client": [
-			"xd.arkosammy.blopedit.BlopeditClient"
+			"xd.arkosammy.blopedit.Blopedit"
 		]
 	},
 	"mixins": [
