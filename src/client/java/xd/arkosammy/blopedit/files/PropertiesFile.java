@@ -47,6 +47,7 @@ public class PropertiesFile {
     PropertiesFile(String shaderPackName) {
         this.shaderPackName = shaderPackName;
         this.shaderPackPath = FabricLoader.getInstance().getGameDir().resolve("shaderpacks").resolve(this.shaderPackName);
+        // Handle the case where the shader is either in its zipped or folder form
         if(this.shaderPackName.endsWith(".zip")) {
             try (FileSystem fs = FileSystems.newFileSystem(this.shaderPackPath);
                  BufferedReader br = Files.newBufferedReader(fs.getPath(BLOCK_PROPERTIES_PATH))) {
@@ -88,7 +89,7 @@ public class PropertiesFile {
     private void addSourceToDestinationForIdentifier(PropertyEntry src, PropertyEntry dest){
         for(FileLine fileLine : this.fileLines){
             if (fileLine instanceof PropertyFileLine propertyFileLine && propertyFileLine.containsIdentifier(dest.getBlockIdentifier())){
-                propertyFileLine.appendValue(src);
+                propertyFileLine.appendProperty(src);
             }
         }
     }
@@ -105,6 +106,7 @@ public class PropertiesFile {
     }
 
     void writeToFile(){
+        // Handle the case where the shader is either in its zipped or folder form
         if(this.shaderPackName.endsWith(".zip")){
             try (FileSystem fs = FileSystems.newFileSystem(this.shaderPackPath);
                  BufferedWriter bw = Files.newBufferedWriter(fs.getPath(BLOCK_PROPERTIES_PATH))) {

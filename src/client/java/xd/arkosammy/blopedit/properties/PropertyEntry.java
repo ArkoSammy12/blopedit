@@ -5,6 +5,12 @@ import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import java.util.*;
 
+/**
+ * Represents a property entry, which is contained in a whitespace separated list of other property entries in a single property file line.
+ * Each property entry is composed of a block identifier path, optionally prefixed by an identifier namespace and a colon, and optionally followed by a colon separated list of key entry pairs corresponding to the block's block state.
+ * Each block-blockstate combination can only appear once in the block.properties file. We can compare different properties using only the identifiers, or also including the properties.
+ * For the case where the property entry lacks an identifier namespace, it is assumed to be of "minecraft"
+ */
 public class PropertyEntry {
 
     private final Identifier blockIdentifier;
@@ -22,18 +28,21 @@ public class PropertyEntry {
         this.blockIdentifier = identifier;
     }
 
-    PropertyEntry(String value){
+    PropertyEntry(String entry){
 
-        int indexOfFirstColon = value.indexOf(':');
-        // If the value doesn't contain a colon, then we only have the block identifier value
+        int indexOfFirstColon = entry.indexOf(':');
+        // If the entry doesn't contain a colon, then we only have the block identifier path
+        // Ex: "farmland"
         if(indexOfFirstColon < 0){
-            this.blockIdentifier = new Identifier("minecraft", value);
+            this.blockIdentifier = new Identifier("minecraft", entry);
         } else {
-            // Split the value by the colons
-            String[] entrySections = value.split(":");
+            // Split the entry by the colons
+            String[] entrySections = entry.split(":");
             if(entrySections.length == 2){
-                // If there are only 2 sections, and the second one contains an equals, then the second property corresponds to a property, and the first section must be the block identifier value
-                // Otherwise, the second section is the block identifier value. The first section is the block identifier namespace
+                // If there are only 2 sections, and the second one contains an equal sign, then the second section corresponds to a property, and the first section must be the block identifier path
+                // Ex: "farmland:moisture=3"
+                // Otherwise, the second section is the block identifier path, and the first section is the block identifier namespace
+                // Ex: "minecraft:farmland"
                 if(entrySections[1].contains("=")){
                     this.blockIdentifier = new Identifier("minecraft", entrySections[0]);
                     String[] propertyKeyValuePair = entrySections[1].split("=");
@@ -42,8 +51,10 @@ public class PropertyEntry {
                     this.blockIdentifier = new Identifier(entrySections[0], entrySections[1]);
                 }
             } else {
-                // If there are more than 3 sections, and the second section contains an equals, then the first section is the block identifier value, and all subsequent ones correspond to properties.
-                // Otherwise, the first section is the namespace, the second section is the block identifier value, and all subsequent ones are properties.
+                // If there are more than 3 sections, and the second section contains an equals, then the first section is the block identifier path, and all subsequent sections correspond to properties.
+                // Ex: "farmland:moisture=3:wet=true"
+                // Otherwise, the first section is the block identifier namespace, the second section is the block identifier path, and all subsequent sections are properties.
+                // Ex: "minecraft:farmland:moisture=3:wet=true"
                 if(entrySections[1].contains("=")) {
                     this.blockIdentifier = new Identifier("minecraft", entrySections[0]);
                     for(int i = 1; i < entrySections.length; i++){

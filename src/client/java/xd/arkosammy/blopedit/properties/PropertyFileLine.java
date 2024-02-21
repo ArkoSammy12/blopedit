@@ -7,6 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
+/**
+ * Represents a single property file line in the block.properties file.
+ * It is composed of a block integer key, formatted as "block.\{numerical_id}",
+ * followed by an equal sign, followed by a whitespace separated list of property entries.
+ */
 public class PropertyFileLine extends FileLine {
 
     private final String key;
@@ -29,7 +35,7 @@ public class PropertyFileLine extends FileLine {
         }
     }
 
-    public void appendValue(PropertyEntry propertyEntry){
+    public void appendProperty(PropertyEntry propertyEntry){
         this.propertyEntries.add(propertyEntry);
     }
 
