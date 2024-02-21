@@ -94,7 +94,7 @@ public class PropertyEntry {
 
     @Override
     public String toString(){
-        return this.properties.isEmpty() ? this.blockIdentifier.toString() : this.blockIdentifier.toString() + ":" + String.join(" " ,this.properties.entrySet().stream().map((entry) -> entry.getKey() + "=" + entry.getValue()).toList());
+        return this.properties.isEmpty() ? this.blockIdentifier.toString() : this.blockIdentifier.toString() + ":" + String.join(":", this.properties.entrySet().stream().map((entry) -> entry.getKey() + "=" + entry.getValue()).toList());
     }
 
     @Override
