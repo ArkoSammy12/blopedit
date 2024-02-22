@@ -64,15 +64,12 @@ public class PropertiesFile {
         PropertyEntry destination = propertiesEditContext.getDestination();
         Set<PropertyEntry> matchingDestinationEntries = propertiesEditContext.getMatchingCondition() == MatchingCondition.MATCH_WITH_PROPERTIES ? this.getFirstMatchingEntriesForProperties(destination) : this.getFirstMatchingEntriesForIdentifier(destination);
         if(matchingDestinationEntries.isEmpty()) {
-            //Blopedit.addMessageToHud(Text.literal("Found no entries matching destination property " + destination.toString() + " in block.properties file of shader " + shaderPackName));
             Blopedit.addMessageToHud(Text.empty().append(Text.literal("Found no entries matching destination property ").formatted(Formatting.YELLOW)).append(Text.literal(destination.toString()).formatted(Formatting.AQUA)).append(Text.literal(" in block.properties file of shader ").formatted(Formatting.YELLOW)).append(Text.literal(shaderPackName).formatted(Formatting.AQUA)));
         } else if (matchingDestinationEntries.size() > 1) {
-            //Blopedit.addMessageToHud(Text.literal("Found multiple entries matching destination property " + destination.toString() + " in block.properties file of shader " + shaderPackName + ": " + String.join(" ", matchingDestinationEntries.stream().map(PropertyEntry::toString).toList())));
             Blopedit.addMessageToHud(Text.empty().append(Text.literal("Found multiple entries matching destination property ").formatted(Formatting.YELLOW)).append(Text.literal(destination.toString()).formatted(Formatting.AQUA)).append(Text.literal(" in block.properties file of shader ").formatted(Formatting.YELLOW)).append(Text.literal(shaderPackName).formatted(Formatting.AQUA)).append(Text.literal(": ").formatted(Formatting.YELLOW)).append(Text.literal(String.join(" ", matchingDestinationEntries.stream().map(PropertyEntry::toString).toList())).formatted(Formatting.AQUA)));
         } else {
             Set<PropertyEntry> matchingSourceEntries = propertiesEditContext.getMatchingCondition() == MatchingCondition.MATCH_WITH_PROPERTIES ? this.getFirstMatchingEntriesForProperties(source) : this.getFirstMatchingEntriesForIdentifier(source);
             if(!matchingSourceEntries.isEmpty()){
-                //Blopedit.addMessageToHud(Text.literal("Source property" + source.toString() + " already found in block.properties file of shader " + shaderPackName));
                 Blopedit.addMessageToHud(Text.empty().append(Text.literal("Source property ").formatted(Formatting.YELLOW)).append(Text.literal(source.toString()).formatted(Formatting.AQUA)).append(Text.literal(" already found in block.properties file of shader ").formatted(Formatting.YELLOW)).append(Text.literal(shaderPackName).formatted(Formatting.AQUA)));
             } else {
                 if (propertiesEditContext.getMatchingCondition() == MatchingCondition.MATCH_WITH_PROPERTIES) {
@@ -82,7 +79,6 @@ public class PropertiesFile {
                 }
                 this.writeToFile();
                 Iris.reload();
-                //Blopedit.addMessageToHud(Text.literal("Source property " + source.toString() + " added to block.properties file at location of " + destination.toString())) ;
                 Blopedit.addMessageToHud(Text.empty().append(Text.literal("Source property ").formatted(Formatting.GREEN)).append(Text.literal(source.toString()).formatted(Formatting.AQUA)).append(Text.literal(" added to block.properties file at location of ").formatted(Formatting.GREEN)).append(Text.literal(destination.toString()).formatted(Formatting.AQUA)));
 
             }
