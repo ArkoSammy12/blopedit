@@ -60,23 +60,20 @@ public class PropertiesFile {
     }
 
     public void processEditContext(FilePropertiesEditContext propertiesEditContext) throws IOException {
+        boolean matchProperties = propertiesEditContext.getMatchingCondition() == MatchingCondition.MATCH_WITH_PROPERTIES;
         PropertyEntry source = propertiesEditContext.getSource();
         PropertyEntry destination = propertiesEditContext.getDestination();
-        Set<PropertyEntry> matchingDestinationEntries = propertiesEditContext.getMatchingCondition() == MatchingCondition.MATCH_WITH_PROPERTIES ? this.getFirstMatchingEntriesForProperties(destination) : this.getFirstMatchingEntriesForIdentifier(destination);
+        Set<PropertyEntry> matchingDestinationEntries = this.getFirstMatchingPropertyEntries(destination, matchProperties);
         if(matchingDestinationEntries.isEmpty()) {
             Blopedit.addMessageToHud(Text.empty().append(Text.literal("Found no entries matching destination property ").formatted(Formatting.YELLOW)).append(Text.literal(destination.toString()).formatted(Formatting.AQUA)).append(Text.literal(" in block.properties file of shader ").formatted(Formatting.YELLOW)).append(Text.literal(shaderPackName).formatted(Formatting.AQUA)));
         } else if (matchingDestinationEntries.size() > 1) {
             Blopedit.addMessageToHud(Text.empty().append(Text.literal("Found multiple entries matching destination property ").formatted(Formatting.YELLOW)).append(Text.literal(destination.toString()).formatted(Formatting.AQUA)).append(Text.literal(" in block.properties file of shader ").formatted(Formatting.YELLOW)).append(Text.literal(shaderPackName).formatted(Formatting.AQUA)).append(Text.literal(": ").formatted(Formatting.YELLOW)).append(Text.literal(String.join(" ", matchingDestinationEntries.stream().map(PropertyEntry::toString).toList())).formatted(Formatting.AQUA)));
         } else {
-            Set<PropertyEntry> matchingSourceEntries = propertiesEditContext.getMatchingCondition() == MatchingCondition.MATCH_WITH_PROPERTIES ? this.getFirstMatchingEntriesForProperties(source) : this.getFirstMatchingEntriesForIdentifier(source);
+            Set<PropertyEntry> matchingSourceEntries = this.getFirstMatchingPropertyEntries(source, matchProperties);
             if(!matchingSourceEntries.isEmpty()){
                 Blopedit.addMessageToHud(Text.empty().append(Text.literal("Source property ").formatted(Formatting.YELLOW)).append(Text.literal(source.toString()).formatted(Formatting.AQUA)).append(Text.literal(" already found in block.properties file of shader ").formatted(Formatting.YELLOW)).append(Text.literal(shaderPackName).formatted(Formatting.AQUA)));
             } else {
-                if (propertiesEditContext.getMatchingCondition() == MatchingCondition.MATCH_WITH_PROPERTIES) {
-                    this.addSourceToDestinationForProperties(source, destination);
-                } else {
-                    this.addSourceToDestinationForIdentifier(source, destination);
-                }
+                this.addSourcePropertyToDestination(source, destination, matchProperties);
                 this.writeToFile();
                 Iris.reload();
                 Blopedit.addMessageToHud(Text.empty().append(Text.literal("Source property ").formatted(Formatting.GREEN)).append(Text.literal(source.toString()).formatted(Formatting.AQUA)).append(Text.literal(" added to block.properties file at location of ").formatted(Formatting.GREEN)).append(Text.literal(destination.toString()).formatted(Formatting.AQUA)));
@@ -85,42 +82,23 @@ public class PropertiesFile {
         }
     }
 
-    private void addSourceToDestinationForIdentifier(PropertyEntry src, PropertyEntry dest){
+    private void addSourcePropertyToDestination(PropertyEntry src, PropertyEntry dest, boolean matchProperties){
         for(FileLine fileLine : this.fileLines){
-            if (fileLine instanceof PropertyFileLine propertyFileLine && propertyFileLine.containsIdentifier(dest.getBlockIdentifier())){
+            if (fileLine instanceof PropertyFileLine propertyFileLine && propertyFileLine.containsMatching(dest, matchProperties)){
                 propertyFileLine.appendProperty(src);
             }
         }
     }
 
-    private void addSourceToDestinationForProperties(PropertyEntry src, PropertyEntry dest){
-        for(FileLine fileLine : this.fileLines){
-            if(fileLine instanceof PropertyFileLine propertyFileLine && propertyFileLine.containsIdentifierWithProperties(dest)) {
-                propertyFileLine.appendProperty(src);
-            }
-        }
-    }
-
-    private Set<PropertyEntry> getFirstMatchingEntriesForIdentifier(PropertyEntry propertyEntry) {
+    private Set<PropertyEntry> getFirstMatchingPropertyEntries(PropertyEntry propertyEntry, boolean matchProperties){
         Set<PropertyEntry> matchingEntries = new HashSet<>();
         for(FileLine fileLine : this.fileLines){
             if (fileLine instanceof PropertyFileLine propertyFileLine) {
-                propertyFileLine.getFirstMatchingValueForIdentifier(propertyEntry).ifPresent(matchingEntries::add);
+                propertyFileLine.getFirstMatchingValue(propertyEntry, matchProperties).ifPresent(matchingEntries::add);
             }
         }
         return matchingEntries;
     }
-
-    private Set<PropertyEntry> getFirstMatchingEntriesForProperties(PropertyEntry propertyEntry){
-        Set<PropertyEntry> matchingEntries = new HashSet<>();
-        for(FileLine fileLine : this.fileLines){
-            if(fileLine instanceof PropertyFileLine propertyFileLine) {
-                propertyFileLine.getFirstMatchingValueForProperties(propertyEntry).ifPresent(matchingEntries::add);
-            }
-        }
-        return matchingEntries;
-    }
-
 
     void writeToFile(){
         // Handle the case where the shader is either in its zipped or folder form

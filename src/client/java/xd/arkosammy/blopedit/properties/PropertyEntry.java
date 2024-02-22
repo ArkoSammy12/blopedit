@@ -84,16 +84,12 @@ public class PropertyEntry {
         return this.properties;
     }
 
-    public boolean matchesIdentifier(PropertyEntry other){
-        return this.blockIdentifier.equals(other.blockIdentifier);
-    }
-
-    public boolean matchesWithProperties(PropertyEntry other){
-        return this.matchesIdentifier(other) && other.properties.entrySet().containsAll(this.properties.entrySet());
-    }
-
-    public boolean matchesIdentifier(Identifier identifier){
-        return this.blockIdentifier.equals(identifier);
+    public boolean matches(PropertyEntry other, boolean matchProperties){
+        boolean matchesIdentifier = this.blockIdentifier.equals(other.blockIdentifier);
+        if(!matchProperties){
+            return matchesIdentifier;
+        }
+        return matchesIdentifier && other.properties.entrySet().containsAll(this.properties.entrySet());
     }
 
     @Override

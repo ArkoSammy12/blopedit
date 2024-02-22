@@ -1,12 +1,8 @@
 package xd.arkosammy.blopedit.properties;
 
-
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 
 /**
  * Represents a single property file line in the block.properties file.
@@ -43,26 +39,13 @@ public class PropertyFileLine extends FileLine {
         return this.propertyEntries.contains(propertyEntry);
     }
 
-    public boolean containsIdentifier(Identifier identifier){
-        return this.propertyEntries.stream().anyMatch(propertyEntry -> propertyEntry.matchesIdentifier(identifier));
+    public boolean containsMatching(PropertyEntry propertyEntry, boolean matchProperties){
+        return this.propertyEntries.stream().anyMatch(entry -> entry.matches(propertyEntry, matchProperties));
     }
 
-    public boolean containsIdentifierWithProperties(PropertyEntry propertyEntry){
-        return this.propertyEntries.stream().anyMatch(entry -> entry.matchesWithProperties(propertyEntry));
-    }
-
-    public Optional<PropertyEntry> getFirstMatchingValueForIdentifier(PropertyEntry propertyEntry){
+    public Optional<PropertyEntry> getFirstMatchingValue(PropertyEntry propertyEntry, boolean matchProperties){
         for(PropertyEntry entry : this.propertyEntries){
-            if(entry.matchesIdentifier(propertyEntry)){
-                return Optional.of(entry);
-            }
-        }
-        return Optional.empty();
-    }
-
-    public Optional<PropertyEntry> getFirstMatchingValueForProperties(PropertyEntry propertyEntry){
-        for(PropertyEntry entry : this.propertyEntries){
-            if(entry.matchesWithProperties(propertyEntry)){
+            if(entry.matches(propertyEntry, matchProperties)){
                 return Optional.of(entry);
             }
         }
