@@ -8,6 +8,7 @@ import xd.arkosammy.blopedit.Blopedit;
 import xd.arkosammy.blopedit.properties.FileLine;
 import xd.arkosammy.blopedit.properties.PropertyEntry;
 import xd.arkosammy.blopedit.properties.PropertyFileLine;
+import xd.arkosammy.blopedit.util.Config;
 import xd.arkosammy.blopedit.util.MatchingCondition;
 
 import java.io.BufferedReader;
@@ -59,7 +60,7 @@ public class PropertiesFile {
         }
     }
 
-    public void processEditContext(FilePropertiesEditContext propertiesEditContext) throws IOException {
+    public void processEditContext(FilePropertiesEditContext propertiesEditContext) {
         boolean matchProperties = propertiesEditContext.getMatchingCondition() == MatchingCondition.MATCH_WITH_PROPERTIES;
         PropertyEntry source = propertiesEditContext.getSource();
         PropertyEntry destination = propertiesEditContext.getDestination();
@@ -79,7 +80,14 @@ public class PropertiesFile {
         }
         this.addSourcePropertyToDestination(source, destination, matchProperties);
         this.writeToFile();
-        Iris.reload();
+        if(Config.getInstance().doAutoReloadShaders()) {
+            try {
+                Iris.reload();
+            } catch (IOException e){
+                Blopedit.addMessageToHud(Text.literal("Error attempting to reload shaders automatically! Check logs for more information.").formatted(Formatting.RED));
+                Blopedit.LOGGER.error("Error attempting to reload shaders automatically: " + e);
+            }
+        }
         Blopedit.addMessageToHud(Text.empty().append(Text.literal("Source property ").formatted(Formatting.GREEN)).append(Text.literal(source.toString()).formatted(Formatting.AQUA)).append(Text.literal(" added to block.properties file at location of ").formatted(Formatting.GREEN)).append(Text.literal(destination.toString()).formatted(Formatting.AQUA)));
     }
 

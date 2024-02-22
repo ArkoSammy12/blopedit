@@ -1,13 +1,16 @@
 package xd.arkosammy.blopedit;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.sun.jdi.connect.Connector;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.argument.BlockStateArgument;
 import net.minecraft.command.argument.BlockStateArgumentType;
@@ -17,13 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xd.arkosammy.blopedit.files.FilePropertiesEditContext;
 import xd.arkosammy.blopedit.files.PropertiesFile;
+import xd.arkosammy.blopedit.util.Config;
 import xd.arkosammy.blopedit.util.MatchingCondition;
 
-import java.io.IOException;
 import java.util.Optional;
 
-// TODO: Remember to handle cases where multiple destination entries are found, and when the source entry is already in the block.properties file
-// TODO: Make automatic shader reloading toggleable
+// TODO: Remember to handle the source entry is already in the block.properties file
 public class Blopedit implements ClientModInitializer {
 
 	public static final String MOD_ID = "blopedit";
@@ -32,31 +34,43 @@ public class Blopedit implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 
+		Config.getInstance().readConfig();
+		ClientLifecycleEvents.CLIENT_STOPPING.register((client -> Config.getInstance().writeConfig()));
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 
 			LiteralCommandNode<FabricClientCommandSource> parentNode = ClientCommandManager
 					.literal("blopedit")
 					.build();
-
+			LiteralCommandNode<FabricClientCommandSource> settingsNode = ClientCommandManager
+					.literal("settings")
+					.build();
+			LiteralCommandNode<FabricClientCommandSource> doAutoReloadShadersNode = ClientCommandManager
+					.literal("doAutoReloadShaders")
+					.executes((ctx) -> {
+						addMessageToHud(Text.literal("doAutoReloadShaders currently set to: " + Config.getInstance().doAutoReloadShaders()).formatted(Formatting.YELLOW));
+						return Command.SINGLE_SUCCESS;
+					})
+					.build();
+			ArgumentCommandNode<FabricClientCommandSource, Boolean> doAutoReloadShadersArgumentNode = ClientCommandManager
+					.argument("value", BoolArgumentType.bool())
+					.executes((ctx) -> {
+						boolean doAutoReloadShaders = BoolArgumentType.getBool(ctx, "value");
+						Config.getInstance().setDoAutoReloadShaders(doAutoReloadShaders);
+						addMessageToHud(Text.literal("doAutoReloadShaders has been set to: " + Config.getInstance().doAutoReloadShaders()).formatted(Formatting.YELLOW));
+						return Command.SINGLE_SUCCESS;
+					})
+					.build();
 			LiteralCommandNode<FabricClientCommandSource> addSourceToPropertiesFile = ClientCommandManager
 					.literal("addToPropertiesFile")
 					.build();
-
 			ArgumentCommandNode<FabricClientCommandSource, BlockStateArgument> addSourceToPropertiesFileArgumentNode = ClientCommandManager
 					.argument("destination", BlockStateArgumentType.blockState(registryAccess))
 					.executes((ctx) -> {
 						Optional<FilePropertiesEditContext> optionalFilePropertiesEditContext = FilePropertiesEditContext.create(ctx);
-						optionalFilePropertiesEditContext.ifPresent(fileEditContext -> PropertiesFile.getInstance().ifPresent(propertiesFile -> {
-                            try {
-                                propertiesFile.processEditContext(fileEditContext);
-                            } catch (IOException e) {
-                                LOGGER.error("Error attempting to reload shaders: " + e);
-                            }
-                        }));
+						optionalFilePropertiesEditContext.ifPresent(fileEditContext -> PropertiesFile.getInstance().ifPresent(propertiesFile -> propertiesFile.processEditContext(fileEditContext)));
 						return Command.SINGLE_SUCCESS;
 					})
 					.build();
-
 			ArgumentCommandNode<FabricClientCommandSource, String> matchingArgumentNode = ClientCommandManager
 					.argument("matching_condition", StringArgumentType.word())
 					.suggests(MatchingCondition.SUGGESTION_PROVIDER)
@@ -65,13 +79,7 @@ public class Blopedit implements ClientModInitializer {
 						if(optionalMatchingCondition.isPresent()){
 							MatchingCondition matchingCondition = optionalMatchingCondition.get();
 							Optional<FilePropertiesEditContext> optionalFilePropertiesEditContext = FilePropertiesEditContext.create(matchingCondition, ctx);
-							optionalFilePropertiesEditContext.ifPresent(fileEditContext -> PropertiesFile.getInstance().ifPresent(propertiesFile -> {
-								try {
-									propertiesFile.processEditContext(fileEditContext);
-								} catch (IOException e) {
-									LOGGER.error("Error attempting to reload shaders: " + e);
-								}
-							}));
+							optionalFilePropertiesEditContext.ifPresent(fileEditContext -> PropertiesFile.getInstance().ifPresent(propertiesFile -> propertiesFile.processEditContext(fileEditContext)));
 						} else {
 							addMessageToHud(Text.literal("Invalid matching condition argument!").formatted(Formatting.RED));
 						}
@@ -81,9 +89,11 @@ public class Blopedit implements ClientModInitializer {
 
 			dispatcher.getRoot().addChild(parentNode);
 			parentNode.addChild(addSourceToPropertiesFile);
+			parentNode.addChild(settingsNode);
+			settingsNode.addChild(doAutoReloadShadersNode);
+			doAutoReloadShadersNode.addChild(doAutoReloadShadersArgumentNode);
 			addSourceToPropertiesFile.addChild(addSourceToPropertiesFileArgumentNode);
 			addSourceToPropertiesFileArgumentNode.addChild(matchingArgumentNode);
-
 		});
 
 	}
