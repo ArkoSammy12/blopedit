@@ -47,14 +47,26 @@ public class PropertyFileLine extends FileLine {
         return this.propertyEntries.stream().anyMatch(propertyEntry -> propertyEntry.matchesIdentifier(identifier));
     }
 
+    public boolean containsIdentifierWithProperties(PropertyEntry propertyEntry){
+        return this.propertyEntries.stream().anyMatch(entry -> entry.matchesWithProperties(propertyEntry));
+    }
+
     public Optional<PropertyEntry> getFirstMatchingValueForIdentifier(PropertyEntry propertyEntry){
-        for(PropertyEntry value : this.propertyEntries){
-            if(value.matchesIdentifier(propertyEntry)){
-                return Optional.of(value);
+        for(PropertyEntry entry : this.propertyEntries){
+            if(entry.matchesIdentifier(propertyEntry)){
+                return Optional.of(entry);
             }
         }
         return Optional.empty();
+    }
 
+    public Optional<PropertyEntry> getFirstMatchingValueForProperties(PropertyEntry propertyEntry){
+        for(PropertyEntry entry : this.propertyEntries){
+            if(entry.matchesWithProperties(propertyEntry)){
+                return Optional.of(entry);
+            }
+        }
+        return Optional.empty();
     }
 
     @Override

@@ -13,6 +13,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import xd.arkosammy.blopedit.Blopedit;
 import xd.arkosammy.blopedit.properties.PropertyEntry;
+import xd.arkosammy.blopedit.util.MatchingCondition;
 
 import java.util.Optional;
 
@@ -21,11 +22,13 @@ public class FilePropertiesEditContext {
     private final CommandContext<? extends FabricClientCommandSource> commandSource;
     private final PropertyEntry source;
     private final PropertyEntry destination;
+    private final MatchingCondition matchingCondition;
 
-    FilePropertiesEditContext(PropertyEntry source, PropertyEntry destination, CommandContext<? extends FabricClientCommandSource> commandSource){
+    FilePropertiesEditContext(PropertyEntry source, PropertyEntry destination, MatchingCondition matchingCondition, CommandContext<? extends FabricClientCommandSource> commandSource){
         this.source = source;
         this.destination = destination;
         this.commandSource = commandSource;
+        this.matchingCondition = matchingCondition;
     }
 
     public PropertyEntry getSource(){
@@ -36,7 +39,15 @@ public class FilePropertiesEditContext {
         return this.destination;
     }
 
-    public static Optional<FilePropertiesEditContext> create(CommandContext<? extends FabricClientCommandSource> ctx){
+    public MatchingCondition getMatchingCondition() {
+        return this.matchingCondition;
+    }
+
+    public static Optional<FilePropertiesEditContext> create(CommandContext<? extends FabricClientCommandSource> ctx) {
+        return create(MatchingCondition.MATCH_IDENTIFIERS, ctx);
+    }
+
+    public static Optional<FilePropertiesEditContext> create(MatchingCondition matchingCondition ,CommandContext<? extends FabricClientCommandSource> ctx){
 
         HitResult hitResult = MinecraftClient.getInstance().crosshairTarget;
         if(!(hitResult instanceof BlockHitResult blockHitResult) || blockHitResult.getType() != HitResult.Type.BLOCK){
@@ -47,14 +58,14 @@ public class FilePropertiesEditContext {
             if(optionalSourceKey.isEmpty()){
                 Blopedit.addMessageToHud(Text.literal("Resource key for source block " + sourceState.getBlock().getName() + " not found!").formatted(Formatting.RED));
             } else {
-                PropertyEntry sourceEntry = new PropertyEntry(optionalSourceKey.get().getValue());
+                PropertyEntry sourceEntry = matchingCondition == MatchingCondition.MATCH_WITH_PROPERTIES ? new PropertyEntry(sourceState) : new PropertyEntry(optionalSourceKey.get().getValue());
                 BlockState destinationState = ctx.getArgument("destination", BlockStateArgument.class).getBlockState();
                 Optional<RegistryKey<Block>> optionalDestinationKey = destinationState.getRegistryEntry().getKey();
                 if(optionalDestinationKey.isEmpty()){
                     Blopedit.addMessageToHud(Text.literal("Resource key for destination block " + destinationState.getBlock().getName() + " not found!").formatted(Formatting.RED));
                 } else {
-                    PropertyEntry destinationEntry = new PropertyEntry(optionalDestinationKey.get().getValue());
-                    return Optional.of(new FilePropertiesEditContext(sourceEntry, destinationEntry, ctx));
+                    PropertyEntry destinationEntry = matchingCondition == MatchingCondition.MATCH_WITH_PROPERTIES ? new PropertyEntry(destinationState) : new PropertyEntry(optionalDestinationKey.get().getValue());
+                    return Optional.of(new FilePropertiesEditContext(sourceEntry, destinationEntry, matchingCondition, ctx));
                 }
 
             }

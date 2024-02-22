@@ -16,7 +16,7 @@ public class PropertyEntry {
     private final Identifier blockIdentifier;
     private final Map<String, String> properties = new HashMap<>();
 
-    PropertyEntry(BlockState state){
+    public PropertyEntry(BlockState state){
         this.blockIdentifier = state.getRegistryEntry().getKey().orElseThrow().getValue();
         Collection<Property<?>> properties = state.getProperties();
         for(Property<?> property : properties){
@@ -86,6 +86,10 @@ public class PropertyEntry {
 
     public boolean matchesIdentifier(PropertyEntry other){
         return this.blockIdentifier.equals(other.blockIdentifier);
+    }
+
+    public boolean matchesWithProperties(PropertyEntry other){
+        return this.matchesIdentifier(other) && other.properties.entrySet().containsAll(this.properties.entrySet());
     }
 
     public boolean matchesIdentifier(Identifier identifier){
