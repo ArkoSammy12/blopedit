@@ -52,28 +52,23 @@ public class FilePropertiesEditContext {
         HitResult hitResult = MinecraftClient.getInstance().crosshairTarget;
         if(!(hitResult instanceof BlockHitResult blockHitResult) || blockHitResult.getType() != HitResult.Type.BLOCK){
             Blopedit.addMessageToHud(Text.literal("You are not currently looking at a block").formatted(Formatting.RED));
-        } else {
-            BlockState sourceState = ctx.getSource().getWorld().getBlockState(blockHitResult.getBlockPos());
-            Optional<RegistryKey<Block>> optionalSourceKey = sourceState.getRegistryEntry().getKey();
-            if(optionalSourceKey.isEmpty()){
-                Blopedit.addMessageToHud(Text.literal("Resource key for source block " + sourceState.getBlock().getName() + " not found!").formatted(Formatting.RED));
-            } else {
-                PropertyEntry sourceEntry = matchProperties ? new PropertyEntry(sourceState) : new PropertyEntry(optionalSourceKey.get().getValue());
-                BlockState destinationState = ctx.getArgument("destination", BlockStateArgument.class).getBlockState();
-                Optional<RegistryKey<Block>> optionalDestinationKey = destinationState.getRegistryEntry().getKey();
-                if(optionalDestinationKey.isEmpty()){
-                    Blopedit.addMessageToHud(Text.literal("Resource key for destination block " + destinationState.getBlock().getName() + " not found!").formatted(Formatting.RED));
-                } else {
-                    PropertyEntry destinationEntry = matchProperties ? new PropertyEntry(destinationState) : new PropertyEntry(optionalDestinationKey.get().getValue());
-                    return Optional.of(new FilePropertiesEditContext(sourceEntry, destinationEntry, matchingCondition, ctx));
-                }
-
-            }
-
+            return Optional.empty();
         }
-
-        return Optional.empty();
-
+        BlockState sourceState = ctx.getSource().getWorld().getBlockState(blockHitResult.getBlockPos());
+        Optional<RegistryKey<Block>> optionalSourceKey = sourceState.getRegistryEntry().getKey();
+        if(optionalSourceKey.isEmpty()){
+            Blopedit.addMessageToHud(Text.literal("Resource key for source block " + sourceState.getBlock().getName() + " not found!").formatted(Formatting.RED));
+            return Optional.empty();
+        }
+        PropertyEntry sourceEntry = matchProperties ? new PropertyEntry(sourceState) : new PropertyEntry(optionalSourceKey.get().getValue());
+        BlockState destinationState = ctx.getArgument("destination", BlockStateArgument.class).getBlockState();
+        Optional<RegistryKey<Block>> optionalDestinationKey = destinationState.getRegistryEntry().getKey();
+        if(optionalDestinationKey.isEmpty()){
+            Blopedit.addMessageToHud(Text.literal("Resource key for destination block " + destinationState.getBlock().getName() + " not found!").formatted(Formatting.RED));
+            return Optional.empty();
+        }
+        PropertyEntry destinationEntry = matchProperties ? new PropertyEntry(destinationState) : new PropertyEntry(optionalDestinationKey.get().getValue());
+        return Optional.of(new FilePropertiesEditContext(sourceEntry, destinationEntry, matchingCondition, ctx));
     }
 
 }
