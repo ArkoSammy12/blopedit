@@ -100,8 +100,8 @@ public class PropertyEntry {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PropertyEntry that)) return false;
-        return Objects.equals(getBlockIdentifier(), that.getBlockIdentifier()) && this.getBlockStateProperties().equals(that.getBlockStateProperties());
+        if (!(o instanceof PropertyEntry entry)) return false;
+        return Objects.equals(getBlockIdentifier(), entry.getBlockIdentifier()) && Objects.equals(properties, entry.properties);
     }
 
     @Override
