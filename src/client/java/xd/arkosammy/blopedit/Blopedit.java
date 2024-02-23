@@ -120,6 +120,8 @@ public class Blopedit implements ClientModInitializer {
 			matchingArgumentNode.addChild(moveSourceIfFoundArgumentNode);
 		});
 
+		LOGGER.info("Thanks to @spaceagle17 (https://github.com/SpacEagle17) for suggesting the idea for this mod, and thanks to the rest of the Complementary shaders community for the awesome support it has given me!");
+
 	}
 
 	public static void addMessageToHud(Text text){
