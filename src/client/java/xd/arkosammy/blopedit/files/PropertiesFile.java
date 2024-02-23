@@ -2,6 +2,9 @@ package xd.arkosammy.blopedit.files;
 
 import net.coderbot.iris.Iris;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import xd.arkosammy.blopedit.Blopedit;
@@ -14,15 +17,14 @@ import xd.arkosammy.blopedit.util.MatchingCondition;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.*;
 
 public class PropertiesFile {
 
-    public static final String BLOCK_PROPERTIES_PATH = "/shaders/block.properties";
+    private static final String BLOCK_PROPERTIES_PATH = "/shaders/block.properties";
+    private static final Path BLOCK_PROPERTIES_FOLDER = FabricLoader.getInstance().getGameDir().resolve("block_properties_file_copies");
+
     private final List<FileLine> fileLines = new ArrayList<>();
     private final String shaderPackName;
     private final Path shaderPackPath;
@@ -155,5 +157,53 @@ public class PropertiesFile {
         }
 
     }
+
+    public void copyPropertiesFileToFolder() {
+        try {
+            // Check if block properties folder exists
+            if (!Files.exists(BLOCK_PROPERTIES_FOLDER)) {
+                Files.createDirectory(BLOCK_PROPERTIES_FOLDER);
+            }
+
+            // Check if specific folder for the shader's block properties file exists
+            Path propertiesFolderForShaderPath = BLOCK_PROPERTIES_FOLDER.resolve(this.shaderPackName);
+            if (!Files.exists(propertiesFolderForShaderPath)) {
+                Files.createDirectory(propertiesFolderForShaderPath);
+            }
+
+            Path propertiesFilePath = propertiesFolderForShaderPath.resolve("block.properties");
+
+            // Check if the block properties file already exists, and append a suffix if so
+            int copyNumber = 1;
+            while (Files.exists(propertiesFilePath)) {
+                propertiesFilePath = propertiesFolderForShaderPath.resolve("block_(%d).properties".formatted(copyNumber));
+                copyNumber++;
+
+                // Add a safeguard to prevent potential infinite loop
+                if (copyNumber > 100) {
+                    throw new IOException("Too many attempts to find a unique file name for block.properties file in " + propertiesFolderForShaderPath);
+                }
+            }
+
+            // Handle the case where the shader is either in its zipped or folder form
+            if (this.shaderPackName.endsWith(".zip")) {
+                try (FileSystem fs = FileSystems.newFileSystem(this.shaderPackPath)) {
+                    Path blockPropertiesPath = fs.getPath(BLOCK_PROPERTIES_PATH);
+                    Files.copy(blockPropertiesPath, propertiesFilePath);
+                }
+            } else {
+                Path blockPropertiesPath = this.shaderPackPath.resolve("shaders").resolve("block.properties");
+                Files.copy(blockPropertiesPath, propertiesFilePath);
+            }
+            Blopedit.addMessageToHud(Text.empty().append(Text.literal("Copied block.properties file of shader " + shaderPackName + " to: " ).formatted(Formatting.GREEN)).append(Text.literal(propertiesFilePath.toString()).setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, propertiesFilePath.toString())).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click here to open file")))).formatted(Formatting.DARK_PURPLE).formatted(Formatting.UNDERLINE)));
+
+        } catch (IOException e) {
+
+            Blopedit.addMessageToHud(Text.literal("Error attempting to copy block.properties file of shader " + shaderPackName + " to folder! Check logs for more information"));
+            Blopedit.LOGGER.error("Error attempting to copy block.properties file of shader " + shaderPackName + ": " + e);
+            e.printStackTrace();
+        }
+    }
+
 
 }
