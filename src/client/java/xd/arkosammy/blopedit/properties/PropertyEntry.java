@@ -20,7 +20,7 @@ public class PropertyEntry {
         this.blockIdentifier = state.getRegistryEntry().getKey().orElseThrow().getValue();
         Collection<Property<?>> properties = state.getProperties();
         for(Property<?> property : properties){
-            this.properties.put(property.getName().toLowerCase(), state.get(property).toString());
+            this.properties.put(property.getName(), state.get(property).toString());
         }
     }
 
@@ -80,16 +80,16 @@ public class PropertyEntry {
         return this.blockIdentifier;
     }
 
-    public Map<String, String> getBlockStateProperties(){
-        return this.properties;
-    }
-
     public boolean matches(PropertyEntry other, boolean matchProperties){
         boolean matchesIdentifier = this.blockIdentifier.equals(other.blockIdentifier);
         if(!matchProperties){
             return matchesIdentifier;
         }
         return matchesIdentifier && other.properties.entrySet().containsAll(this.properties.entrySet());
+    }
+
+    public void removePropertiesNotIn(PropertyEntry other){
+        this.properties.entrySet().removeIf(entry -> !other.properties.containsKey(entry.getKey()));
     }
 
     @Override

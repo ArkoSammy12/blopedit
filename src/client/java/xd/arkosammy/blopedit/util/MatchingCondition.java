@@ -13,8 +13,8 @@ import java.util.Optional;
 
 public enum MatchingCondition implements StringIdentifiable {
     MATCH_IDENTIFIERS("matchIdentifiers"),
-    //MATCH_WITH_PROPERTIES_SOURCE("matchWithPropertiesSource"),
-    //MATCH_WITH_PROPERTIES_DESTINATION("matchWithPropertiesDestination"),
+    MATCH_WITH_PROPERTIES_SOURCE("matchWithPropertiesSource"),
+    MATCH_WITH_PROPERTIES_DESTINATION("matchWithPropertiesDestination"),
     MATCH_WITH_PROPERTIES("matchWithProperties");
 
     public static final SuggestionProvider<FabricClientCommandSource> SUGGESTION_PROVIDER = SuggestionProviders.register(new Identifier(Blopedit.MOD_ID, "matching_conditions_suggestions"), ((context, builder) -> CommandSource.suggestMatching(Arrays.stream(MatchingCondition.values()).map(MatchingCondition::asString), builder)));
@@ -25,7 +25,7 @@ public enum MatchingCondition implements StringIdentifiable {
         this.identifier = identifier;
     }
 
-    /*
+
     public boolean matchingPropertiesForSource() {
         return switch (this) {
             case MATCH_WITH_PROPERTIES, MATCH_WITH_PROPERTIES_SOURCE -> true;
@@ -39,7 +39,7 @@ public enum MatchingCondition implements StringIdentifiable {
             case MATCH_IDENTIFIERS, MATCH_WITH_PROPERTIES_SOURCE -> false;
         };
     }
-     */
+
 
     public static Optional<MatchingCondition> fromString(String string){
         for(MatchingCondition matchingCondition : MatchingCondition.values()){

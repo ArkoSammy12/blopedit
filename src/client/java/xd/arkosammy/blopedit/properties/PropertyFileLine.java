@@ -1,8 +1,6 @@
 package xd.arkosammy.blopedit.properties;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Represents a single property file line in the block.properties file.
@@ -41,6 +39,19 @@ public class PropertyFileLine extends FileLine {
 
     public boolean containsMatching(PropertyEntry propertyEntry, boolean matchProperties){
         return this.propertyEntries.stream().anyMatch(entry -> entry.matches(propertyEntry, matchProperties));
+    }
+
+    public Set<PropertyEntry> removeIfMatching(PropertyEntry propertyEntry, boolean matchProperties){
+        Set<PropertyEntry> deletedEntries = new HashSet<>();
+        this.propertyEntries.removeIf(entry -> {
+            if(entry.matches(propertyEntry, matchProperties)) {
+                deletedEntries.add(entry);
+                return true;
+            } else {
+                return false;
+            }
+        });
+        return deletedEntries;
     }
 
     public Optional<PropertyEntry> getFirstMatchingValue(PropertyEntry propertyEntry, boolean matchProperties){

@@ -5,7 +5,6 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import com.sun.jdi.connect.Connector;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -87,6 +86,22 @@ public class Blopedit implements ClientModInitializer {
 					})
 					.build();
 
+			ArgumentCommandNode<FabricClientCommandSource, Boolean> moveSourceIfFoundArgumentNode = ClientCommandManager
+					.argument("moveSourceIfFound", BoolArgumentType.bool())
+					.executes((ctx) -> {
+						boolean moveSourceIfFound = BoolArgumentType.getBool(ctx, "moveSourceIfFound");
+						Optional<MatchingCondition> optionalMatchingCondition = MatchingCondition.fromString(StringArgumentType.getString(ctx, "matching_condition"));
+						if(optionalMatchingCondition.isPresent()){
+							MatchingCondition matchingCondition = optionalMatchingCondition.get();
+							Optional<FilePropertiesEditContext> optionalFilePropertiesEditContext = FilePropertiesEditContext.create(matchingCondition, moveSourceIfFound, ctx);
+							optionalFilePropertiesEditContext.ifPresent(fileEditContext -> PropertiesFile.getInstance().ifPresent(propertiesFile -> propertiesFile.processEditContext(fileEditContext)));
+						} else {
+							addMessageToHud(Text.literal("Invalid matching condition argument!").formatted(Formatting.RED));
+						}
+						return Command.SINGLE_SUCCESS;
+					})
+					.build();
+
 			dispatcher.getRoot().addChild(parentNode);
 			parentNode.addChild(addSourceToPropertiesFile);
 			parentNode.addChild(settingsNode);
@@ -94,6 +109,7 @@ public class Blopedit implements ClientModInitializer {
 			doAutoReloadShadersNode.addChild(doAutoReloadShadersArgumentNode);
 			addSourceToPropertiesFile.addChild(addSourceToPropertiesFileArgumentNode);
 			addSourceToPropertiesFileArgumentNode.addChild(matchingArgumentNode);
+			matchingArgumentNode.addChild(moveSourceIfFoundArgumentNode);
 		});
 
 	}

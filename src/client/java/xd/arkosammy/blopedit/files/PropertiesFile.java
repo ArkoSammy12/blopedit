@@ -61,10 +61,10 @@ public class PropertiesFile {
     }
 
     public void processEditContext(FilePropertiesEditContext propertiesEditContext) {
-        boolean matchProperties = propertiesEditContext.getMatchingCondition() == MatchingCondition.MATCH_WITH_PROPERTIES;
+        MatchingCondition matchingCondition = propertiesEditContext.getMatchingCondition();
         PropertyEntry source = propertiesEditContext.getSource();
         PropertyEntry destination = propertiesEditContext.getDestination();
-        Set<PropertyEntry> matchingDestinationEntries = this.getFirstMatchingPropertyEntries(destination, matchProperties);
+        Set<PropertyEntry> matchingDestinationEntries = this.getFirstMatchingPropertyEntries(destination, matchingCondition.matchingPropertiesForDestination());
         if(matchingDestinationEntries.isEmpty()) {
             Blopedit.addMessageToHud(Text.empty().append(Text.literal("Found no entries matching destination property ").formatted(Formatting.YELLOW)).append(Text.literal(destination.toString()).formatted(Formatting.AQUA)).append(Text.literal(" in block.properties file of shader ").formatted(Formatting.YELLOW)).append(Text.literal(shaderPackName).formatted(Formatting.AQUA)));
             return;
@@ -73,12 +73,23 @@ public class PropertiesFile {
             Blopedit.addMessageToHud(Text.empty().append(Text.literal("Found multiple entries matching destination property ").formatted(Formatting.YELLOW)).append(Text.literal(destination.toString()).formatted(Formatting.AQUA)).append(Text.literal(" in block.properties file of shader ").formatted(Formatting.YELLOW)).append(Text.literal(shaderPackName).formatted(Formatting.AQUA)).append(Text.literal(": ").formatted(Formatting.YELLOW)).append(Text.literal(String.join(" ", matchingDestinationEntries.stream().map(PropertyEntry::toString).toList())).formatted(Formatting.AQUA)));
             return;
         }
-        Set<PropertyEntry> matchingSourceEntries = this.getFirstMatchingPropertyEntries(source, matchProperties);
+        Set<PropertyEntry> deletedEntries = new HashSet<>();
+        if(propertiesEditContext.moveSourceIfFound()){
+            deletedEntries.addAll(this.deleteEntriesIfMatching(source, matchingCondition.matchingPropertiesForSource()));
+            if(!deletedEntries.isEmpty()){
+                Blopedit.addMessageToHud(Text.literal("Removing already present source entries: ").formatted(Formatting.YELLOW).append(Text.literal(String.join(" ", deletedEntries.stream().map(PropertyEntry::toString).toList())).formatted(Formatting.AQUA)));
+            }
+        }
+        Set<PropertyEntry> matchingSourceEntries = this.getFirstMatchingPropertyEntries(source, matchingCondition.matchingPropertiesForSource());
         if(!matchingSourceEntries.isEmpty()){
-            Blopedit.addMessageToHud(Text.empty().append(Text.literal("Source property ").formatted(Formatting.YELLOW)).append(Text.literal(source.toString()).formatted(Formatting.AQUA)).append(Text.literal(" already found in block.properties file of shader ").formatted(Formatting.YELLOW)).append(Text.literal(shaderPackName).formatted(Formatting.AQUA)));
+            Blopedit.addMessageToHud(Text.empty().append(Text.literal("Source property ").formatted(Formatting.YELLOW)).append(Text.literal(source.toString()).formatted(Formatting.AQUA)).append(Text.literal(" already found in block.properties file of shader ").formatted(Formatting.YELLOW)).append(Text.literal(shaderPackName).formatted(Formatting.AQUA)).append(Text.literal(": ").formatted(Formatting.YELLOW)).append(Text.literal(String.join(" ", matchingSourceEntries.stream().map(PropertyEntry::toString).toList())).formatted(Formatting.AQUA)));
             return;
         }
-        this.addSourcePropertyToDestination(source, destination, matchProperties);
+        // Only include properties that match those of the previously present entries to not include unnecessary extra properties
+        for(PropertyEntry deletedEntry : deletedEntries){
+            source.removePropertiesNotIn(deletedEntry);
+        }
+        this.addSourcePropertyToDestination(source, destination, matchingCondition.matchingPropertiesForDestination());
         this.writeToFile();
         if(Config.getInstance().doAutoReloadShaders()) {
             try {
@@ -88,12 +99,12 @@ public class PropertiesFile {
                 Blopedit.LOGGER.error("Error attempting to reload shaders automatically: " + e);
             }
         }
-        Blopedit.addMessageToHud(Text.empty().append(Text.literal("Source property ").formatted(Formatting.GREEN)).append(Text.literal(source.toString()).formatted(Formatting.AQUA)).append(Text.literal(" added to block.properties file at location of ").formatted(Formatting.GREEN)).append(Text.literal(destination.toString()).formatted(Formatting.AQUA)));
+        Blopedit.addMessageToHud(Text.empty().append(Text.literal("Source property ").formatted(Formatting.GREEN)).append(Text.literal(source.toString()).formatted(Formatting.AQUA)).append(Text.literal(" added to block.properties file at location of: ").formatted(Formatting.GREEN)).append(Text.literal(String.join(" ", matchingDestinationEntries.stream().map(PropertyEntry::toString).toList())).formatted(Formatting.AQUA)));
     }
 
-    private void addSourcePropertyToDestination(PropertyEntry src, PropertyEntry dest, boolean matchProperties){
+    private void addSourcePropertyToDestination(PropertyEntry src, PropertyEntry dest, boolean matchingPropertiesForDestination){
         for(FileLine fileLine : this.fileLines){
-            if (fileLine instanceof PropertyFileLine propertyFileLine && propertyFileLine.containsMatching(dest, matchProperties)){
+            if (fileLine instanceof PropertyFileLine propertyFileLine && propertyFileLine.containsMatching(dest, matchingPropertiesForDestination)){
                 propertyFileLine.appendProperty(src);
             }
         }
@@ -107,6 +118,16 @@ public class PropertiesFile {
             }
         }
         return matchingEntries;
+    }
+
+    private Set<PropertyEntry> deleteEntriesIfMatching(PropertyEntry propertyEntry, boolean matchProperties){
+        Set<PropertyEntry> deletedEntries = new HashSet<>();
+        for(FileLine fileLine : this.fileLines){
+            if(fileLine instanceof PropertyFileLine propertyFileLine){
+                deletedEntries.addAll(propertyFileLine.removeIfMatching(propertyEntry, matchProperties));
+            }
+        }
+        return deletedEntries;
     }
 
     void writeToFile(){
