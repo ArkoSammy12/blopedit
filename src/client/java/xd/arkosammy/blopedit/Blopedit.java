@@ -28,8 +28,8 @@ import java.util.Optional;
 public class Blopedit implements ClientModInitializer {
 
 	public static final String MOD_ID = "blopedit";
-
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+
 	@Override
 	public void onInitializeClient() {
 
@@ -39,6 +39,13 @@ public class Blopedit implements ClientModInitializer {
 
 			LiteralCommandNode<FabricClientCommandSource> parentNode = ClientCommandManager
 					.literal("blopedit")
+					.build();
+			LiteralCommandNode<FabricClientCommandSource> copyPropertiesFileToFolderNode = ClientCommandManager
+					.literal("copyPropertiesFileToFolder")
+					.executes((ctx) -> {
+						PropertiesFile.getInstance().ifPresent(PropertiesFile::copyPropertiesFileToFolder);
+						return Command.SINGLE_SUCCESS;
+					})
 					.build();
 			LiteralCommandNode<FabricClientCommandSource> settingsNode = ClientCommandManager
 					.literal("settings")
@@ -104,6 +111,7 @@ public class Blopedit implements ClientModInitializer {
 
 			dispatcher.getRoot().addChild(parentNode);
 			parentNode.addChild(addSourceToPropertiesFile);
+			parentNode.addChild(copyPropertiesFileToFolderNode);
 			parentNode.addChild(settingsNode);
 			settingsNode.addChild(doAutoReloadShadersNode);
 			doAutoReloadShadersNode.addChild(doAutoReloadShadersArgumentNode);
