@@ -3,6 +3,8 @@ package xd.arkosammy.blopedit.properties;
 import net.minecraft.block.BlockState;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
+import xd.arkosammy.blopedit.Blopedit;
+
 import java.util.*;
 
 /**
@@ -46,7 +48,11 @@ public class PropertyEntry {
                 if(entrySections[1].contains("=")){
                     this.blockIdentifier = new Identifier("minecraft", entrySections[0]);
                     String[] propertyKeyValuePair = entrySections[1].split("=");
-                    this.properties.put(propertyKeyValuePair[0], propertyKeyValuePair[1]);
+                    if(propertyKeyValuePair.length == 2) {
+                        this.properties.put(propertyKeyValuePair[0], propertyKeyValuePair[1]);
+                    } else {
+                        Blopedit.LOGGER.warn("Property entry " + entry + " could not be fully parsed as it contains incorrectly formatted property key value pairs.");
+                    }
                 } else {
                     this.blockIdentifier = new Identifier(entrySections[0], entrySections[1]);
                 }
@@ -60,14 +66,22 @@ public class PropertyEntry {
                     for(int i = 1; i < entrySections.length; i++){
                         String propertySection = entrySections[i];
                         String[] propertyKeyValuePair = propertySection.split("=");
-                        this.properties.put(propertyKeyValuePair[0], propertyKeyValuePair[1]);
+                        if(propertyKeyValuePair.length == 2) {
+                            this.properties.put(propertyKeyValuePair[0], propertyKeyValuePair[1]);
+                        } else {
+                            Blopedit.LOGGER.warn("Property entry " + entry + " could not be fully parsed as it contains incorrectly formatted property key value pairs.");
+                        }
                     }
                 } else {
                     this.blockIdentifier = new Identifier(entrySections[0], entrySections[1]);
                     for (int i = 2; i < entrySections.length; i++) {
                         String propertySection = entrySections[i];
                         String[] propertyKeyValuePair = propertySection.split("=");
-                        this.properties.put(propertyKeyValuePair[0], propertyKeyValuePair[1]);
+                        if(propertyKeyValuePair.length == 2) {
+                            this.properties.put(propertyKeyValuePair[0], propertyKeyValuePair[1]);
+                        } else {
+                            Blopedit.LOGGER.warn("Property entry " + entry + " could not be fully parsed as it contains incorrectly formatted property key value pairs.");
+                        }
                     }
                 }
             }
@@ -76,11 +90,11 @@ public class PropertyEntry {
 
     }
 
-    public Identifier getBlockIdentifier(){
+    Identifier getBlockIdentifier(){
         return this.blockIdentifier;
     }
 
-    public boolean matches(PropertyEntry other, boolean matchProperties){
+    boolean matches(PropertyEntry other, boolean matchProperties){
         boolean matchesIdentifier = this.blockIdentifier.equals(other.blockIdentifier);
         if(!matchProperties){
             return matchesIdentifier;

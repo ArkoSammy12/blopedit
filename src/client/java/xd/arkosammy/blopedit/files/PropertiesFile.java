@@ -44,25 +44,26 @@ public class PropertiesFile {
     PropertiesFile(String shaderPackName) {
         this.shaderPackName = shaderPackName;
         this.shaderPackPath = FabricLoader.getInstance().getGameDir().resolve("shaderpacks").resolve(this.shaderPackName);
-        // Handle the case where the shader is either in its zipped or folder form
-        if(this.shaderPackName.endsWith(".zip")) {
-            try (FileSystem fs = FileSystems.newFileSystem(this.shaderPackPath);
-                 BufferedReader br = Files.newBufferedReader(fs.getPath(BLOCK_PROPERTIES_PATH))) {
-                br.lines().forEach(line -> this.fileLines.add(FileLine.newFileLine(line)));
-            } catch (IOException e) {
-                Blopedit.LOGGER.error("Error attempting to read block.properties file of shader " + shaderPackName + ": " + e);
+
+        try {
+            // Handle the case where the shader is either in its zipped or folder form
+            if (this.shaderPackName.endsWith(".zip")) {
+                try (FileSystem fs = FileSystems.newFileSystem(this.shaderPackPath);
+                     BufferedReader br = Files.newBufferedReader(fs.getPath(BLOCK_PROPERTIES_PATH))) {
+                     br.lines().forEach(line -> this.fileLines.add(FileLine.newFileLine(line)));
+                }
+            } else {
+                Path blockPropertiesPath = this.shaderPackPath.resolve("shaders").resolve("block.properties");
+                try (BufferedReader br = Files.newBufferedReader(blockPropertiesPath)) {
+                    br.lines().forEach(line -> this.fileLines.add(FileLine.newFileLine(line)));
+                }
             }
-        } else {
-            Path blockPropertiesPath = this.shaderPackPath.resolve("shaders").resolve("block.properties");
-            try(BufferedReader br = Files.newBufferedReader(blockPropertiesPath)) {
-                br.lines().forEach(line -> this.fileLines.add(FileLine.newFileLine(line)));
-            } catch (IOException e){
-                Blopedit.LOGGER.error("Error attempting to read block.properties file of shader " + shaderPackName + ": " + e);
-            }
+        } catch (IOException e){
+            Blopedit.LOGGER.error("Error attempting to read block.properties file of shader " + shaderPackName + ": " + e);
         }
     }
 
-    public void processEditContext(FilePropertiesEditContext propertiesEditContext) {
+    public void processEditContext(PropertiesFileEditContext propertiesEditContext) {
         MatchingCondition matchingCondition = propertiesEditContext.getMatchingCondition();
         PropertyEntry source = propertiesEditContext.getSource();
         PropertyEntry destination = propertiesEditContext.getDestination();
@@ -133,29 +134,29 @@ public class PropertiesFile {
     }
 
     void writeToFile(){
-        // Handle the case where the shader is either in its zipped or folder form
-        if(this.shaderPackName.endsWith(".zip")){
-            try (FileSystem fs = FileSystems.newFileSystem(this.shaderPackPath);
-                 BufferedWriter bw = Files.newBufferedWriter(fs.getPath(BLOCK_PROPERTIES_PATH))) {
-                for(FileLine fileLine : this.fileLines) {
-                    bw.write(fileLine.getString());
-                    bw.newLine();
-                }
-            } catch (IOException e){
-                Blopedit.LOGGER.error("Error attempting to write to block.properties file of shader " + shaderPackName + ": " + e);
-            }
-        } else {
-            Path blockPropertiesPath = this.shaderPackPath.resolve("shaders").resolve("block.properties");
-            try(BufferedWriter bw = Files.newBufferedWriter(blockPropertiesPath)) {
-                for(FileLine fileLine : this.fileLines) {
-                    bw.write(fileLine.getString());
-                    bw.newLine();
-                }
-            } catch (IOException e){
-                Blopedit.LOGGER.error("Error attempting to write to block.properties file of shader " + shaderPackName + ": " + e);
-            }
-        }
 
+        try {
+            // Handle the case where the shader is either in its zipped or folder form
+            if (this.shaderPackName.endsWith(".zip")) {
+                try (FileSystem fs = FileSystems.newFileSystem(this.shaderPackPath);
+                     BufferedWriter bw = Files.newBufferedWriter(fs.getPath(BLOCK_PROPERTIES_PATH))) {
+                    for (FileLine fileLine : this.fileLines) {
+                        bw.write(fileLine.getString());
+                        bw.newLine();
+                    }
+                }
+            } else {
+                Path blockPropertiesPath = this.shaderPackPath.resolve("shaders").resolve("block.properties");
+                try (BufferedWriter bw = Files.newBufferedWriter(blockPropertiesPath)) {
+                    for (FileLine fileLine : this.fileLines) {
+                        bw.write(fileLine.getString());
+                        bw.newLine();
+                    }
+                }
+            }
+        } catch (IOException e) {
+            Blopedit.LOGGER.error("Error attempting to write to block.properties file of shader " + shaderPackName + ": " + e);
+        }
     }
 
     public void copyPropertiesFileToFolder() {
@@ -204,6 +205,5 @@ public class PropertiesFile {
             e.printStackTrace();
         }
     }
-
 
 }

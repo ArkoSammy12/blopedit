@@ -17,7 +17,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xd.arkosammy.blopedit.files.FilePropertiesEditContext;
+import xd.arkosammy.blopedit.files.PropertiesFileEditContext;
 import xd.arkosammy.blopedit.files.PropertiesFile;
 import xd.arkosammy.blopedit.util.Config;
 import xd.arkosammy.blopedit.util.MatchingCondition;
@@ -72,19 +72,19 @@ public class Blopedit implements ClientModInitializer {
 			ArgumentCommandNode<FabricClientCommandSource, BlockStateArgument> addSourceToPropertiesFileArgumentNode = ClientCommandManager
 					.argument("destination", BlockStateArgumentType.blockState(registryAccess))
 					.executes((ctx) -> {
-						Optional<FilePropertiesEditContext> optionalFilePropertiesEditContext = FilePropertiesEditContext.create(ctx);
+						Optional<PropertiesFileEditContext> optionalFilePropertiesEditContext = PropertiesFileEditContext.create(ctx);
 						optionalFilePropertiesEditContext.ifPresent(fileEditContext -> PropertiesFile.getInstance().ifPresent(propertiesFile -> propertiesFile.processEditContext(fileEditContext)));
 						return Command.SINGLE_SUCCESS;
 					})
 					.build();
 			ArgumentCommandNode<FabricClientCommandSource, String> matchingArgumentNode = ClientCommandManager
-					.argument("matching_condition", StringArgumentType.word())
+					.argument("matchingCondition", StringArgumentType.word())
 					.suggests(MatchingCondition.SUGGESTION_PROVIDER)
 					.executes((ctx) -> {
-						Optional<MatchingCondition> optionalMatchingCondition = MatchingCondition.fromString(StringArgumentType.getString(ctx, "matching_condition"));
+						Optional<MatchingCondition> optionalMatchingCondition = MatchingCondition.fromString(StringArgumentType.getString(ctx, "matchingCondition"));
 						if(optionalMatchingCondition.isPresent()){
 							MatchingCondition matchingCondition = optionalMatchingCondition.get();
-							Optional<FilePropertiesEditContext> optionalFilePropertiesEditContext = FilePropertiesEditContext.create(matchingCondition, ctx);
+							Optional<PropertiesFileEditContext> optionalFilePropertiesEditContext = PropertiesFileEditContext.create(matchingCondition, ctx);
 							optionalFilePropertiesEditContext.ifPresent(fileEditContext -> PropertiesFile.getInstance().ifPresent(propertiesFile -> propertiesFile.processEditContext(fileEditContext)));
 						} else {
 							addMessageToHud(Text.literal("Invalid matching condition argument!").formatted(Formatting.RED));
@@ -92,15 +92,17 @@ public class Blopedit implements ClientModInitializer {
 						return Command.SINGLE_SUCCESS;
 					})
 					.build();
-
+			LiteralCommandNode<FabricClientCommandSource> moveSourceIfFoundNode = ClientCommandManager
+					.literal("moveSourceIfFound")
+					.build();
 			ArgumentCommandNode<FabricClientCommandSource, Boolean> moveSourceIfFoundArgumentNode = ClientCommandManager
-					.argument("moveSourceIfFound", BoolArgumentType.bool())
+					.argument("value", BoolArgumentType.bool())
 					.executes((ctx) -> {
-						boolean moveSourceIfFound = BoolArgumentType.getBool(ctx, "moveSourceIfFound");
-						Optional<MatchingCondition> optionalMatchingCondition = MatchingCondition.fromString(StringArgumentType.getString(ctx, "matching_condition"));
+						Optional<MatchingCondition> optionalMatchingCondition = MatchingCondition.fromString(StringArgumentType.getString(ctx, "matchingCondition"));
 						if(optionalMatchingCondition.isPresent()){
 							MatchingCondition matchingCondition = optionalMatchingCondition.get();
-							Optional<FilePropertiesEditContext> optionalFilePropertiesEditContext = FilePropertiesEditContext.create(matchingCondition, moveSourceIfFound, ctx);
+							boolean moveSourceIfFound = BoolArgumentType.getBool(ctx, "value");
+							Optional<PropertiesFileEditContext> optionalFilePropertiesEditContext = PropertiesFileEditContext.create(matchingCondition, moveSourceIfFound, ctx);
 							optionalFilePropertiesEditContext.ifPresent(fileEditContext -> PropertiesFile.getInstance().ifPresent(propertiesFile -> propertiesFile.processEditContext(fileEditContext)));
 						} else {
 							addMessageToHud(Text.literal("Invalid matching condition argument!").formatted(Formatting.RED));
@@ -117,7 +119,8 @@ public class Blopedit implements ClientModInitializer {
 			doAutoReloadShadersNode.addChild(doAutoReloadShadersArgumentNode);
 			addSourceToPropertiesFile.addChild(addSourceToPropertiesFileArgumentNode);
 			addSourceToPropertiesFileArgumentNode.addChild(matchingArgumentNode);
-			matchingArgumentNode.addChild(moveSourceIfFoundArgumentNode);
+			matchingArgumentNode.addChild(moveSourceIfFoundNode);
+			moveSourceIfFoundNode.addChild(moveSourceIfFoundArgumentNode);
 		});
 
 		LOGGER.info("Thanks to @spaceagle17 (https://github.com/SpacEagle17) for suggesting the idea for this mod, and thanks to the rest of the Complementary shaders community for the awesome support it has given me!");

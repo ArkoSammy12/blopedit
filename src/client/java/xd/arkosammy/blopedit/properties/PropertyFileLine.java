@@ -19,10 +19,10 @@ public class PropertyFileLine extends FileLine {
             throw new IllegalArgumentException("Property line does not contain equals sign '='");
         } else {
             this.key = line.substring(0, indexOfFirstEquals);
-            String valueString = line.substring(indexOfFirstEquals + 1);
-            if(!valueString.isBlank()){
-                String[] values = valueString.split("\\s+");
-                for(String value : values){
+            String entriesString = line.substring(indexOfFirstEquals + 1);
+            if(!entriesString.isBlank()){
+                String[] entries = entriesString.split("\\s+");
+                for(String value : entries){
                     propertyEntries.add(new PropertyEntry(value));
                 }
             }

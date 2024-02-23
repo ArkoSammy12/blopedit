@@ -17,7 +17,7 @@ import xd.arkosammy.blopedit.util.MatchingCondition;
 
 import java.util.Optional;
 
-public class FilePropertiesEditContext {
+public class PropertiesFileEditContext {
 
     private final CommandContext<? extends FabricClientCommandSource> commandSource;
     private final PropertyEntry source;
@@ -25,7 +25,7 @@ public class FilePropertiesEditContext {
     private final MatchingCondition matchingCondition;
     private final boolean moveSourceIfFound;
 
-    FilePropertiesEditContext(PropertyEntry source, PropertyEntry destination, MatchingCondition matchingCondition, boolean moveSourceIfFound, CommandContext<? extends FabricClientCommandSource> commandSource){
+    PropertiesFileEditContext(PropertyEntry source, PropertyEntry destination, MatchingCondition matchingCondition, boolean moveSourceIfFound, CommandContext<? extends FabricClientCommandSource> commandSource){
         this.source = source;
         this.destination = destination;
         this.commandSource = commandSource;
@@ -49,15 +49,15 @@ public class FilePropertiesEditContext {
         return this.moveSourceIfFound;
     }
 
-    public static Optional<FilePropertiesEditContext> create(CommandContext<? extends FabricClientCommandSource> ctx) {
+    public static Optional<PropertiesFileEditContext> create(CommandContext<? extends FabricClientCommandSource> ctx) {
         return create(MatchingCondition.MATCH_IDENTIFIERS, ctx);
     }
 
-    public static Optional<FilePropertiesEditContext> create(MatchingCondition matchingCondition, CommandContext<? extends FabricClientCommandSource> ctx){
+    public static Optional<PropertiesFileEditContext> create(MatchingCondition matchingCondition, CommandContext<? extends FabricClientCommandSource> ctx){
         return create(matchingCondition, false, ctx);
     }
 
-    public static Optional<FilePropertiesEditContext> create(MatchingCondition matchingCondition, boolean moveSourceIfFound, CommandContext<? extends FabricClientCommandSource> ctx){
+    public static Optional<PropertiesFileEditContext> create(MatchingCondition matchingCondition, boolean moveSourceIfFound, CommandContext<? extends FabricClientCommandSource> ctx){
         HitResult hitResult = MinecraftClient.getInstance().crosshairTarget;
         if(!(hitResult instanceof BlockHitResult blockHitResult) || blockHitResult.getType() != HitResult.Type.BLOCK){
             Blopedit.addMessageToHud(Text.literal("You are not currently looking at a block").formatted(Formatting.RED));
@@ -77,7 +77,7 @@ public class FilePropertiesEditContext {
             return Optional.empty();
         }
         PropertyEntry destinationEntry = matchingCondition.matchingPropertiesForDestination() ? new PropertyEntry(destinationState) : new PropertyEntry(optionalDestinationKey.get().getValue());
-        return Optional.of(new FilePropertiesEditContext(sourceEntry, destinationEntry, matchingCondition, moveSourceIfFound, ctx));
+        return Optional.of(new PropertiesFileEditContext(sourceEntry, destinationEntry, matchingCondition, moveSourceIfFound, ctx));
     }
 
 }

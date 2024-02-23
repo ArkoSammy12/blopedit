@@ -10,7 +10,7 @@ public abstract class FileLine {
 
     public static FileLine newFileLine(String line){
         if(line.trim().isEmpty()){
-            return new EmptyFileLine("");
+            return new EmptyFileLine();
         } else if (line.trim().charAt(0) == '#') {
             return new CommentFileLine(line);
         } else {
