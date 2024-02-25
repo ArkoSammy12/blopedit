@@ -28,8 +28,8 @@ The source entry is added to where the destination entry is.
 
 Blopedit has four options to determine the matching behaviour of input entries to compare them against entries in the file. This controls whether you see that your destination entry matches multiple, or only a single entry in the file, or whether a source entry is found in the file.
 
-- Match Identifiers: This option makes the mod match both the source entry and the destination entry using only their identifiers. This means that, for an input entry, any entry in the file whose identifiers are the same will be considered a match.
-- Match with Properties: This option makes the mod match both the source entry and the destination entry using both the identifiers and the properties of the entries. Specifically, for any entry present in the file, if an input entry contains the same properties and property values as the ones present entry in the file, and the identifiers are the same. It will be considered a match. 
+- Match Identifiers: This option makes the mod match both the source entry and the destination entry using only their identifiers. This means that, for an input entry, any entry in the file whose identifiers are the same will be considered a match. When matching only with identifiers, the block state's properties are not taken into account.
+- Match with Properties: This option makes the mod match both the source entry and the destination entry using both the identifiers and the properties of the entries. Specifically, for any entry present in the file, if an input entry contains the properties and property values, as the ones in the entry in the file, and the identifiers are the same. It will be considered a match. For example, `minecraft:oak_stair:waterlogged=true:facing=north` is considered to match with `minecraft:oak_stair:waterlogged=true`, as the former contains properties present in the latter, and the matching properties' values are the same.
 - Match with Properties Source: This option enables matching with properties for the source entry, while only matching by identifiers for the destination block.
 - Match with Properties Destination: This option matching with properties for the destination entry, while only matching by identifiers for the source entry.
 
@@ -40,7 +40,8 @@ Once attempted to add a source entry to where a destination entry is, this opera
 - There is only one matching destination entry.
 - There are no entries in the file that match the source entry or the option to move the source if found is enabled.
 
-If the operation is successful, the source entry will be added to all lines where a matching destination entry was found. If the option to move the source if found is enabled, it will also delete all the entries that were matched with the source entry, and then place them again in the places where a matching destination entry was found.
+If the operation is successful, the source entry will be added to all lines where a matching destination entry was found. If the option to move the source if found is enabled, it will also delete all the entries matched with the source entry, and then place them again in the places where a matching destination entry was found.
+Additionally, if a source entry was matched with already present entries, the  resulting source entry will only include properties that were present in the matched already present entries.
 
 ## Extra features
 
