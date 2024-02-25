@@ -23,7 +23,7 @@ import java.util.*;
 public class PropertiesFile {
 
     private static final String BLOCK_PROPERTIES_PATH = "/shaders/block.properties";
-    private static final Path BLOCK_PROPERTIES_FOLDER = FabricLoader.getInstance().getGameDir().resolve("block_properties_file_copies");
+    private static final Path BLOCK_PROPERTIES_FOLDER = FabricLoader.getInstance().getGameDir().resolve("blopedit");
 
     private final List<FileLine> fileLines = new ArrayList<>();
     private final String shaderPackName;
@@ -60,6 +60,7 @@ public class PropertiesFile {
             }
         } catch (IOException e){
             Blopedit.LOGGER.error("Error attempting to read block.properties file of shader " + shaderPackName + ": " + e);
+            e.printStackTrace();
         }
     }
 
@@ -100,6 +101,7 @@ public class PropertiesFile {
             } catch (IOException e){
                 Blopedit.addMessageToHud(Text.literal("Error attempting to reload shaders automatically! Check logs for more information.").formatted(Formatting.RED));
                 Blopedit.LOGGER.error("Error attempting to reload shaders automatically: " + e);
+                e.printStackTrace();
             }
         }
         Blopedit.addMessageToHud(Text.empty().append(Text.literal("Source property ").formatted(Formatting.GREEN)).append(Text.literal(source.toString()).formatted(Formatting.AQUA)).append(Text.literal(" added to block.properties file at location of: ").formatted(Formatting.GREEN)).append(Text.literal(String.join(" ", matchingDestinationEntries.stream().map(PropertyEntry::toString).toList())).formatted(Formatting.AQUA)));
@@ -133,7 +135,7 @@ public class PropertiesFile {
         return deletedEntries;
     }
 
-    void writeToFile(){
+    private void writeToFile(){
 
         try {
             // Handle the case where the shader is either in its zipped or folder form
@@ -156,6 +158,7 @@ public class PropertiesFile {
             }
         } catch (IOException e) {
             Blopedit.LOGGER.error("Error attempting to write to block.properties file of shader " + shaderPackName + ": " + e);
+            e.printStackTrace();
         }
     }
 
@@ -196,7 +199,7 @@ public class PropertiesFile {
                 Path blockPropertiesPath = this.shaderPackPath.resolve("shaders").resolve("block.properties");
                 Files.copy(blockPropertiesPath, propertiesFilePath);
             }
-            Blopedit.addMessageToHud(Text.empty().append(Text.literal("Copied block.properties file of shader " + shaderPackName + " to: " ).formatted(Formatting.GREEN)).append(Text.literal(propertiesFilePath.toString()).setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, propertiesFilePath.toString())).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click here to open file")))).formatted(Formatting.DARK_PURPLE).formatted(Formatting.UNDERLINE)));
+            Blopedit.addMessageToHud(Text.empty().append(Text.literal("Copied block.properties file of shader " + shaderPackName + " to: " ).formatted(Formatting.GREEN)).append(Text.literal(propertiesFilePath.toString()).setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, propertiesFilePath.toString())).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click here to open file")))).formatted(Formatting.DARK_BLUE).formatted(Formatting.UNDERLINE)));
 
         } catch (IOException e) {
 
