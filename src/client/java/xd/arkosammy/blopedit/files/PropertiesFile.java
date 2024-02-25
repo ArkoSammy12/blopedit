@@ -199,7 +199,7 @@ public class PropertiesFile {
                 Path blockPropertiesPath = this.shaderPackPath.resolve("shaders").resolve("block.properties");
                 Files.copy(blockPropertiesPath, propertiesFilePath);
             }
-            Blopedit.addMessageToHud(Text.empty().append(Text.literal("Copied block.properties file of shader " + shaderPackName + " to: " ).formatted(Formatting.GREEN)).append(Text.literal(propertiesFilePath.toString()).setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, propertiesFilePath.toString())).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click here to open file")))).formatted(Formatting.DARK_BLUE).formatted(Formatting.UNDERLINE)));
+            Blopedit.addMessageToHud(Text.empty().append(Text.literal("Copied block.properties file of shader " + shaderPackName + " to: " ).formatted(Formatting.GREEN)).append(Text.literal(propertiesFilePath.toString()).setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, propertiesFilePath.toString())).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click here to open file")))).formatted(Formatting.GRAY).formatted(Formatting.UNDERLINE)));
 
         } catch (IOException e) {
 
